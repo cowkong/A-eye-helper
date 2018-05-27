@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Lex Sample</string>
+    <string name="bot_name">Schedule</string>
+    <string name="bot_alias">$LATEST</string>
+    <string name="identity_id_test">us-east-1:0bef752d-016b-475c-b6b9-37d5ad650b5a</string>
+    <string name="cognito_region">us-east-1</string>
+    <string name="lex_region">us-east-1</string>
+    <string name="screen_options_main_message">Amazon Lex</string>
+    <string name="title_activity_alarm">alarmActivity</string>
+</resources>
+
