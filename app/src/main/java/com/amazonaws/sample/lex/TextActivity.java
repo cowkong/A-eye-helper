@@ -16,8 +16,10 @@
 package com.amazonaws.sample.lex;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -34,8 +36,11 @@ import com.amazonaws.mobileconnectors.lex.interactionkit.listeners.AudioPlayback
 import com.amazonaws.mobileconnectors.lex.interactionkit.listeners.InteractionListener;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.lexrts.model.DialogState;
+import com.amazonaws.services.polly.AmazonPollyPresigningClient;
+import com.amazonaws.util.StringUtils;
 
 import java.text.DateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 public class TextActivity extends Activity {
@@ -46,6 +51,19 @@ public class TextActivity extends Activity {
     private boolean inConversation;
     private LexServiceContinuation convContinuation;
     private int file_count = 0;
+
+    private String responseTodo;
+    private String responseYear;
+    private String responseMonth;
+    private String responseDay;
+    private String responseTime;
+
+    private AmazonPollyPresigningClient client;
+    private Uri notificationVoIce;
+
+    AlarmManager alarmManager;
+    Alarm al;
+
     getContact gC;
 
     @Override
@@ -53,6 +71,10 @@ public class TextActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_text);
         init();
+        StringUtils.isBlank("notempty");
+
+        alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+
     }
 
     @Override
@@ -64,6 +86,7 @@ public class TextActivity extends Activity {
      * Initializes the application.
      */
     private void init() {
+        al = new Alarm();
         Log.d(TAG, "Initializing text component: ");
         appContext = getApplicationContext();
         userTextInput = (EditText) findViewById(R.id.userInputEditText);
@@ -117,12 +140,13 @@ public class TextActivity extends Activity {
             addMessage(new TextMessage(text, "tx", getCurrentTimeStamp()));
             lexInteractionClient.textInForTextOut(text, null);
 
+            /*
             if(text.equals("turn on the camera")) {
                 showToast("Good");
                 Intent textIntent = new Intent(appContext, cameraActivity.class);
                 startActivity(textIntent);
             }
-
+            */
 
             inConversation = true;
         } else {
@@ -196,7 +220,9 @@ public class TextActivity extends Activity {
         @Override
         public void promptUserToRespond(final Response response,
                 final LexServiceContinuation continuation) {
+
             addMessage(new TextMessage(response.getTextResponse(), "rx", getCurrentTimeStamp()));
+            //addMessage(new TextMessage(response.getTextResponse(), "rx", getCurrentTimeStamp()));
 
             if(response.getTextResponse().contains("Send")){
 
@@ -221,13 +247,51 @@ public class TextActivity extends Activity {
                 SendMessage.SendMessage(appContext, contactName, SendMessageType);
 
             }
-        /*
-            else if(response.getTextResponse().contentEquals("Ok. I will turn Camera On")) {
+            else if(response.getTextResponse().contains("Ok. I will turn Camera On")) {
                 showToast("Good");
                 Intent textIntent = new Intent(appContext, cameraActivity.class);
                 startActivity(textIntent);
             }
-            */
+            else if(response.getTextResponse().contains("correct??")){
+
+                String Value = response.getTextResponse();
+
+                Log.d("Response","Response Todo : " +Value );
+                String[] array = Value.split("-");
+                responseTodo = array[0];
+                responseYear = array[1];
+                responseMonth = array[2];
+                responseDay = array[3];
+                responseTime = array[4];
+
+                Calendar ct = Calendar.getInstance();
+
+                Log.d("Response Todo","Response Todo : " +responseTodo );
+                Log.d("Response Date","Response Year : " +responseYear );
+                Log.d("Response Date","Response Month : " +responseMonth );
+                Log.d("Response Date","Response Day : " +responseDay );
+                Log.d("Response Time","Response Time : " +responseTime );
+
+
+                String[] array3 = responseTime.split(" ");
+                String[] timeHolder = array3[0].split(":");
+
+                ct.set(Calendar.YEAR,Integer.parseInt(responseYear));
+                ct.set(Calendar.MONTH,Integer.parseInt(responseMonth)-1);
+                ct.set(Calendar.DATE,Integer.parseInt(responseDay));
+                ct.set(Calendar.HOUR_OF_DAY,Integer.parseInt(timeHolder[0]));
+                ct.set(Calendar.MINUTE,Integer.parseInt(timeHolder[1]));
+                ct.set(Calendar.SECOND,0);
+
+
+                al.setTime(ct);
+                al.setAlarmManager(alarmManager);
+
+            }
+
+            if(response.getTextResponse().contains("Success")){
+                al.setAlarm(appContext,responseTodo);
+            }
             readUserText(continuation);
 
         }

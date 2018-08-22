@@ -1,5 +1,8 @@
 package com.amazonaws.sample.lex;
 
+import android.content.Context;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
@@ -27,19 +30,40 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.amazonaws.auth.CognitoCachingCredentialsProvider;
+import com.amazonaws.mobileconnectors.s3.transfermanager.Upload;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.polly.AmazonPollyPresigningClient;
+import com.amazonaws.services.polly.model.OutputFormat;
+import com.amazonaws.services.polly.model.SynthesizeSpeechPresignRequest;
+
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import retrofit.Call;
 
 
 public class cameraActivity extends Activity {
     //AppCompatActivity
+
+    private static final String TAG = "cameraActivity";
+    String COGNITO_POOL_ID = "us-east-1:3a5a9bd2-18ef-4ca4-b077-89c0adcc7de0";
+    Regions MY_REGION = Regions.US_EAST_1;
+
+
     private static final int MY_PERMISSION_CAMERA = 1111;
     private static final int REQUEST_IMAGE_CAPTURE = 2222;
     //private static final int REQUEST_TAKE_PHOTO = 2222;
     private static final int REQUEST_TAKE_ALBUM = 3333;
     private static final int REQUEST_IMAGE_CROP = 4444;
+
+
+    CognitoCachingCredentialsProvider credentialsProvider;
+    private AmazonPollyPresigningClient client;
+    private Context appContext;
 
     ImageView iv_view;
 
@@ -47,17 +71,77 @@ public class cameraActivity extends Activity {
 
     Uri imageUri;
     Uri photoURI, albumURI;
-
+    int type;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //setContentView(R.layout.activity_camera);
-        captureCamera();
+        init();
         checkPermission();
+        captureCamera();
+
     }
 
+    private void init(){
+        appContext = getApplicationContext();
+        credentialsProvider = new CognitoCachingCredentialsProvider(
+                getApplicationContext(),
+                COGNITO_POOL_ID,
+                MY_REGION
+        );
+
+        // Create a client that supports generation of presigned URLs.
+        client = new AmazonPollyPresigningClient(credentialsProvider);
+    }
+
+    public void play(String todo){
+        SynthesizeSpeechPresignRequest synthesizeSpeechPresignRequest =
+                new SynthesizeSpeechPresignRequest()
+                        // Set the text to synthesize.
+                        .withText(todo)
+                       // Select voice for synthesis.
+                        .withVoiceId("Seoyeon")
+                        // Set format to MP3.
+                        .withOutputFormat(OutputFormat.Mp3);
+
+        URL presignedSynthesizeSpeechUrl =
+                client.getPresignedSynthesizeSpeechUrl(synthesizeSpeechPresignRequest);
+        // Use MediaPlayer: https://developer.android.com/guide/topics/media/mediaplayer.html
+
+        // Create a media player to play the synthesized audio stream.
+        MediaPlayer mediaPlayer = new MediaPlayer();
+        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+
+        try {
+            // Set media player's data source to previously obtained URL.
+            mediaPlayer.setDataSource(presignedSynthesizeSpeechUrl.toString());
+        } catch (IOException e) {
+            Log.e(TAG, "Unable to set data source for the media player! " + e.getMessage());
+        }
+
+// Prepare the MediaPlayer asynchronously (since the data source is a network stream).
+        mediaPlayer.prepareAsync();
+
+// Set the callback to start the MediaPlayer when it's prepared.
+        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                mp.start();
+            }
+        });
+
+// Set the callback to release the MediaPlayer after playback is completed.
+        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                mp.release();
+            }
+        });
+    }
     private void captureCamera(){
         String state = Environment.getExternalStorageState();
+        Intent intent = this.getIntent();
+        type = intent.getIntExtra("type",2);
         //외장 메모리 검사
         if (Environment.MEDIA_MOUNTED.equals(state)){
             Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -78,14 +162,9 @@ public class cameraActivity extends Activity {
 
                     //인텐트에 전달할 때는 FileProvider의 Return값인 content://로만!!, providerURI의 값에 카메라 데이터를 넣어 보냄
                     takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, providerURI);
+                    takePictureIntent.putExtra("type",type);
                     startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
 
-                    /*
-                    //finish();
-                    Intent intent = new Intent(this, MyActivity.class);
-                    intent.putExtra("filePath", mCurrentPhotoPath);
-                    startActivity(intent);
-*/
                 }
             }
         } else{
@@ -112,13 +191,6 @@ public class cameraActivity extends Activity {
         return imageFile;
     }
 
-    private void getAlbum(){
-        Log.i("getAlbum", "Call");
-        Intent intent = new Intent(Intent.ACTION_PICK);
-        intent.setType("image/*");
-        intent.setType(android.provider.MediaStore.Images.Media.CONTENT_TYPE);
-        startActivityForResult(intent, REQUEST_TAKE_ALBUM);
-    }
 
     private void galleryAddPic(){
         Log.i("galleryAddPic", "Call");
@@ -131,52 +203,38 @@ public class cameraActivity extends Activity {
         Toast.makeText(this,"사진이 앨범에 저장되었습니다.", Toast.LENGTH_SHORT).show();
     }
 
-    /*
-        //카메라 전용 크랍
-        public void cropImage(){
-            Log.i("cropImage", "Call");
-            Log.i("cropImage", "photoURI : " + photoURI + " / albumURI : " + albumURI);
-
-            Intent cropIntent = new Intent("com.android.camera.action.CROP");
-
-            //50x50픽셀 미만은 편집할 수 없다는 문구 처리 + 갤러리, 포토 둘 다 호환하는 방법
-            cropIntent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            cropIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            cropIntent.setDataAndType(photoURI,"image/*");
-            //cropIntent.putExtra("outputX",200);
-    //crop한 이미지의 x축 크기, 결과물의 킉
-            //cropIntent.putExtra("outputY",200);
-            //crop한 이미지의 y축 ㅋ기
-            cropIntent.putExtra("aspectX",1); // crop박스의 x축 비율, 1&1이면 정사각형
-            cropIntent.putExtra("aspectY",1); //crop 박스의 y축 비율
-            cropIntent.putExtra("scale",true);
-            cropIntent.putExtra("output",albumURI); // 크랍한 이미지를 해당 경로에 저장
-            startActivityForResult(cropIntent, REQUEST_IMAGE_CROP);
-        }
-    */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
-        switch(requestCode){
+
+        rekogObject rekogResult = new rekogObject();
+
+        switch(requestCode) {
             case REQUEST_IMAGE_CAPTURE:
 
-                if (resultCode == Activity.RESULT_OK) {
-                    try{
-                        Log.i("REQUEST_TAKE_PHOTO", "OK");
-                        galleryAddPic();
-                        //iv_view.setImageURI(imageUri);
+                Log.i("REQUEST_TAKE_PHOTO", "OK");
+                galleryAddPic();
+                //iv_view.setImageURI(imageUri);
 
-                        Intent intent = new Intent(this, uploadS3.class);
-                        intent.putExtra("filePath", mCurrentPhotoPath.toString());
-                        startActivity(intent);
-                        finish();
+                final UploadFile uploadTask = new UploadFile();
+                Log.d("hello",mCurrentPhotoPath);
+                try{
+                    final String pollyMessage= uploadTask.execute(mCurrentPhotoPath.toString(),""+type).get();
+                    new Thread() {
+                        public void run(){
+                            play(pollyMessage);
+                        }
+                    }.start();
 
-                        //Toast.makeText(this, mCurrentPhotoPath.toString(), Toast.LENGTH_SHORT).show();
-                    } catch (Exception e){
-                        Log.e("REQUEST_TAKE_PHOTO", e.toString());
-                    }
-                } else {
-                    Toast.makeText(this, "사진찍기를 취소하였습니다.",  Toast.LENGTH_SHORT).show();
+                }catch(Exception e){
+                    e.printStackTrace();
                 }
+                finish();
+
+
+
+
+
+
                 break;
 
             case REQUEST_TAKE_ALBUM:
