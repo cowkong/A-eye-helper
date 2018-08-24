@@ -1,10 +1,8 @@
-package com.amazonaws.sample.lex;
+package com.amazonaws.sample.lex.REKOGNITION;
 
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
-
-import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;

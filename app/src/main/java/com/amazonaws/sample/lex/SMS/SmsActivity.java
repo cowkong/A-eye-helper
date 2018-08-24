@@ -1,4 +1,4 @@
-package com.amazonaws.sample.lex;
+package com.amazonaws.sample.lex.SMS;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -21,6 +21,7 @@ import com.amazonaws.regions.Regions;
 
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 
+import com.amazonaws.sample.lex.R;
 import com.amazonaws.services.polly.AmazonPollyPresigningClient;
 import com.amazonaws.services.polly.model.DescribeVoicesRequest;
 import com.amazonaws.services.polly.model.DescribeVoicesResult;
@@ -32,8 +33,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
-public class smsActivity extends Activity {
-    private static final String TAG = "smsActivity";
+public class SmsActivity extends Activity {
+    private static final String TAG = "SmsActivity";
     private Context appContext;
     private AmazonPollyPresigningClient client;
     private List<Voice> voices;
@@ -110,7 +111,7 @@ public class smsActivity extends Activity {
         SynthesizeSpeechPresignRequest synthesizeSpeechPresignRequest =
                 new SynthesizeSpeechPresignRequest()
                         // Set the text to synthesize.
-                        .withText(getName()+ "에게" + readSMS + "메시지 도착")
+                        .withText(getName()+ "에게" + readSMS + ". 메시지 도착")
                         // Select voice for synthesis.
                         .withVoiceId("Seoyeon")
                         // Set format to MP3.

@@ -1,4 +1,4 @@
-package com.amazonaws.sample.lex;
+package com.amazonaws.sample.lex.REKOGNITION;
 
 public class objectValue {
     private String name;

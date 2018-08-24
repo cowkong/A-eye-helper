@@ -1,4 +1,4 @@
-package com.amazonaws.sample.lex;
+package com.amazonaws.sample.lex.SMS;
 
 import android.content.Context;
 import android.telephony.SmsManager;

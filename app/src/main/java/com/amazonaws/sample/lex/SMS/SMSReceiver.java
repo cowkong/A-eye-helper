@@ -1,29 +1,12 @@
-package com.amazonaws.sample.lex;
+package com.amazonaws.sample.lex.SMS;
 
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 
-import android.provider.ContactsContract;
 import android.telephony.SmsMessage;
-import android.util.Log;
 import android.widget.Toast;
-
-import com.amazonaws.services.polly.model.DescribeVoicesRequest;
-import com.amazonaws.services.polly.model.DescribeVoicesResult;
-import com.amazonaws.services.polly.model.OutputFormat;
-import com.amazonaws.services.polly.model.SynthesizeSpeechPresignRequest;
-import com.amazonaws.services.polly.model.Voice;
-
-import java.io.IOException;
-import java.net.URL;
-import java.util.List;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
 
 public class SMSReceiver extends BroadcastReceiver{
     private static final String TAG = "PollyDemo";
@@ -62,7 +45,7 @@ public class SMSReceiver extends BroadcastReceiver{
 
             Toast.makeText(context, str, Toast.LENGTH_LONG).show();
 
-            intent = new Intent(context, smsActivity.class);
+            intent = new Intent(context, SmsActivity.class);
             intent.putExtra("smsMessage",readSMS);
             intent.putExtra("contactPerson",pNum);
             context.startActivity(intent);

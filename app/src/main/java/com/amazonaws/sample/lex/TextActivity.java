@@ -35,6 +35,9 @@ import com.amazonaws.mobileconnectors.lex.interactionkit.continuations.LexServic
 import com.amazonaws.mobileconnectors.lex.interactionkit.listeners.AudioPlaybackListener;
 import com.amazonaws.mobileconnectors.lex.interactionkit.listeners.InteractionListener;
 import com.amazonaws.regions.Regions;
+import com.amazonaws.sample.lex.CONTACT.GetContact;
+import com.amazonaws.sample.lex.REKOGNITION.cameraActivity;
+import com.amazonaws.sample.lex.SMS.SendMessage;
 import com.amazonaws.services.lexrts.model.DialogState;
 import com.amazonaws.services.polly.AmazonPollyPresigningClient;
 import com.amazonaws.util.StringUtils;
@@ -64,7 +67,7 @@ public class TextActivity extends Activity {
     AlarmManager alarmManager;
     Alarm al;
 
-    getContact gC;
+    GetContact gC;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -226,7 +229,7 @@ public class TextActivity extends Activity {
 
             if(response.getTextResponse().contains("Send")){
 
-                gC = new getContact();
+                gC = new GetContact();
 
                 String Value = response.getTextResponse();
 
@@ -235,7 +238,7 @@ public class TextActivity extends Activity {
                 for (int i = 3; i < array.length; i++) {
                     System.out.println(array[i]);
                 }
-                gC = new getContact();
+                gC = new GetContact();
 
                 String contactName = gC.getPhoneNumber(array[3], appContext);
                 String SendMessageType = "";

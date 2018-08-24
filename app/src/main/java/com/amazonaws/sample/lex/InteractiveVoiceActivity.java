@@ -35,13 +35,13 @@ import com.amazonaws.mobileconnectors.lex.interactionkit.Response;
 import com.amazonaws.mobileconnectors.lex.interactionkit.config.InteractionConfig;
 import com.amazonaws.mobileconnectors.lex.interactionkit.ui.InteractiveVoiceView;
 import com.amazonaws.regions.Regions;
+import com.amazonaws.sample.lex.CONTACT.GetContact;
+import com.amazonaws.sample.lex.REKOGNITION.cameraActivity;
+import com.amazonaws.sample.lex.SMS.SendMessage;
 import com.amazonaws.services.polly.AmazonPollyPresigningClient;
-import com.amazonaws.services.polly.model.OutputFormat;
-import com.amazonaws.services.polly.model.SynthesizeSpeechPresignRequest;
 import com.amazonaws.util.StringUtils;
 
 
-import java.net.URL;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.Map;
@@ -72,7 +72,7 @@ public class InteractiveVoiceActivity extends Activity
     AlarmManager alarmManager;
     Alarm al;
 
-    getContact gC;
+    GetContact gC;
 
 
     @Override
@@ -142,7 +142,7 @@ public class InteractiveVoiceActivity extends Activity
 
         if(response.getTextResponse().contains("Send") && count ==0){
             count++;
-            gC = new getContact();
+            gC = new GetContact();
 
             String Value = response.getTextResponse();
 
@@ -151,7 +151,7 @@ public class InteractiveVoiceActivity extends Activity
             for (int i = 3; i < array.length; i++) {
                 System.out.println(array[i]);
             }
-            gC = new getContact();
+            gC = new GetContact();
 
             String contactName = gC.getPhoneNumber(array[3], appContext);
             String SendMessageType = "";

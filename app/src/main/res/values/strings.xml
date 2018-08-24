@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Lex Sample</string>
+    <string name="app_name">AeyeHelper</string>
     <string name="bot_name">AEyeHelper</string>
     <string name="bot_alias">$LATEST</string>
     <string name="identity_id_test">us-east-1:1ed02bb8-7cc8-4d73-b27c-5f17cdc98563</string>

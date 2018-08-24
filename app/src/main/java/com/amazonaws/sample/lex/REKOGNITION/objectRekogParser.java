@@ -1,7 +1,6 @@
-package com.amazonaws.sample.lex;
+package com.amazonaws.sample.lex.REKOGNITION;
 
 import android.util.JsonReader;
-import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
