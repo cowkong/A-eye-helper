@@ -222,8 +222,8 @@ public class InteractiveVoiceActivity extends Activity
             al.setTime(ct);
             al.setAlarmManager(alarmManager);
 
-        }else if (response.getTextResponse().contains("Make a Call")){
-
+        }else if (response.getTextResponse().contains("Make a Call")  && count ==0  ){
+            count++;
             String Value = response.getTextResponse();
 
             String[] array = Value.split(" ");
@@ -236,7 +236,10 @@ public class InteractiveVoiceActivity extends Activity
 
 
         if(response.getTextResponse().contains("Success")){
-            al.setAlarm(appContext,responseTodo);
+            if(responseTodo != null){
+                al.setAlarm(appContext,responseTodo);
+            }
+
             exit();
         }
     }

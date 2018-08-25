@@ -46,7 +46,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private static final int SMS_READ_PERMISSON = 3333;
     private static final int SMS_WRITE_PERMISSON = 4444;
     private static final int READ_PHONE_STATE_PERMISSION = 5555;
-
+    private static final int CALL_PHONE_PERMISSION = 6666;
     private static final String TAG = "MainActivity";
 
     private Button textDemoButton;
@@ -150,6 +150,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     return;
                 }
             }
+        }else if( requestCode == CALL_PHONE_PERMISSION){
+            for(int i = 0; i < grantResults.length; i++) {
+                //grantResults[] : 허용된 권한은 0, 거부한 권한은 -1
+                if(grantResults[i] < 0){
+                    Toast.makeText(this, "전화 받기 권한을 활성화 하셔야 합니다.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            }
         }
 
         //허용 했다면 이 부분에서...
@@ -177,9 +185,37 @@ public class MainActivity extends Activity implements View.OnClickListener {
     //sms 권한 확인
     public void smsPermission(){
 
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED){
+            // 처음 호출시엔 if()안의 부분은 false로 리턴됨 -> else{..}의 요청으로 넘어감
+            if((ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.SEND_SMS)) || (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA))) {
+                new AlertDialog.Builder(this)
+                        .setTitle("알림")
+                        .setMessage("SMS 권한이 거부되었습니다. 사용을 원하시면 설정에서 해당권한을 직접 허용하셔야 합니다.")
+                        .setNeutralButton("설정", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                intent.setData(Uri.parse("package:" + getPackageName()));
+                                startActivity(intent);
+                            }
+                        })
+                        .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i){
+                                finish();
+                            }
+                        })
+                        .setCancelable(false)
+                        .create()
+                        .show();
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS, Manifest.permission.CAMERA}, SMS_RECEIVE_PERMISSION);
+            }
+        }
+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_SMS) != PackageManager.PERMISSION_GRANTED){
             // 처음 호출시엔 if()안의 부분은 false로 리턴됨 -> else{..}의 요청으로 넘어감
-            if((ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) || (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA))) {
+            if((ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.RECEIVE_SMS)) || (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA))) {
                 new AlertDialog.Builder(this)
                         .setTitle("알림")
                         .setMessage("SMS 권한이 거부되었습니다. 사용을 원하시면 설정에서 해당권한을 직접 허용하셔야 합니다.")
@@ -207,7 +243,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED){
             // 처음 호출시엔 if()안의 부분은 false로 리턴됨 -> else{..}의 요청으로 넘어감
-            if((ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) || (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA))) {
+            if((ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_CONTACTS)) || (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA))) {
                 new AlertDialog.Builder(this)
                         .setTitle("알림")
                         .setMessage("SMS 읽기 권한이 거부되었습니다. 사용을 원하시면 설정에서 해당권한을 직접 허용하셔야 합니다.")
@@ -235,7 +271,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED){
             // 처음 호출시엔 if()안의 부분은 false로 리턴됨 -> else{..}의 요청으로 넘어감
-            if((ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) || (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA))) {
+            if((ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_CONTACTS)) || (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA))) {
                 new AlertDialog.Builder(this)
                         .setTitle("알림")
                         .setMessage("SMS 쓰끼 권한이 거부되었습니다. 사용을 원하시면 설정에서 해당권한을 직접 허용하셔야 합니다.")
@@ -265,7 +301,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private void callPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED){
             // 처음 호출시엔 if()안의 부분은 false로 리턴됨 -> else{..}의 요청으로 넘어감
-            if((ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) || (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA))) {
+            if((ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_PHONE_STATE)) || (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA))) {
                 new AlertDialog.Builder(this)
                         .setTitle("알림")
                         .setMessage("저장소 권한이 거부되었습니다. 사용을 원하시면 설정에서 해당권한을 직접 허용하셔야 합니다.")
@@ -290,12 +326,39 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_PHONE_STATE, Manifest.permission.CAMERA}, READ_PHONE_STATE_PERMISSION);
             }
         }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED){
+            // 처음 호출시엔 if()안의 부분은 false로 리턴됨 -> else{..}의 요청으로 넘어감
+            if((ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CALL_PHONE)) || (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA))) {
+                new AlertDialog.Builder(this)
+                        .setTitle("알림")
+                        .setMessage("저장소 권한이 거부되었습니다. 사용을 원하시면 설정에서 해당권한을 직접 허용하셔야 합니다.")
+                        .setNeutralButton("설정", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                intent.setData(Uri.parse("package:" + getPackageName()));
+                                startActivity(intent);
+                            }
+                        })
+                        .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i){
+                                finish();
+                            }
+                        })
+                        .setCancelable(false)
+                        .create()
+                        .show();
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CALL_PHONE, Manifest.permission.CAMERA}, CALL_PHONE_PERMISSION);
+            }
+        }
     }
 
     private void voicePermission(){
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED){
             // 처음 호출시엔 if()안의 부분은 false로 리턴됨 -> else{..}의 요청으로 넘어감
-            if((ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) || (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA))) {
+            if((ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.RECORD_AUDIO)) || (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA))) {
                 new AlertDialog.Builder(this)
                         .setTitle("알림")
                         .setMessage("저장소 권한이 거부되었습니다. 사용을 원하시면 설정에서 해당권한을 직접 허용하셔야 합니다.")
