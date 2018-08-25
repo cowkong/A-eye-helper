@@ -110,8 +110,6 @@ public class InteractiveVoiceActivity extends Activity
                         appContext.getString(R.string.bot_alias)));
         voiceView.getViewAdapter().setAwsRegion(appContext.getString(R.string.lex_region));
 
-        //polly clinet 가져오기
-        //client = new AmazonPollyPresigningClient(credentialsProvider);
     }
 
 
@@ -164,8 +162,6 @@ public class InteractiveVoiceActivity extends Activity
 
         }  else if(response.getTextResponse().contains("Ok. I will turn Camera On for Object")  && count ==0) {
             count++;
-            //showToast("Good");
-
             int permissionCheck = ContextCompat.checkSelfPermission(InteractiveVoiceActivity.this, Manifest.permission.CAMERA);
             if(permissionCheck == PackageManager.PERMISSION_DENIED){
                 //권한없음
@@ -182,7 +178,6 @@ public class InteractiveVoiceActivity extends Activity
         }
         else if(response.getTextResponse().contains("Ok. I will turn Camera On for Money") && count ==0 ) {
             count++;
-            //showToast("Good");
 
             int permissionCheck = ContextCompat.checkSelfPermission(InteractiveVoiceActivity.this, Manifest.permission.CAMERA);
             if(permissionCheck == PackageManager.PERMISSION_DENIED){
@@ -227,7 +222,18 @@ public class InteractiveVoiceActivity extends Activity
             al.setTime(ct);
             al.setAlarmManager(alarmManager);
 
+        }else if (response.getTextResponse().contains("Make a Call")){
+
+            String Value = response.getTextResponse();
+
+            String[] array = Value.split(" ");
+            //출력
+
+            String contactName = gC.getPhoneNumber(array[0], appContext);
+
+            makeCall(appContext, contactName);
         }
+
 
         if(response.getTextResponse().contains("Success")){
             al.setAlarm(appContext,responseTodo);
@@ -249,5 +255,23 @@ public class InteractiveVoiceActivity extends Activity
                 Toast.makeText(this,"카메라 권한이 거절됨", Toast.LENGTH_SHORT).show();
 
         }
+    }
+
+    private void makeCall(Context context, String number){
+        Intent intent = new Intent(Intent.ACTION_CALL);
+        intent.setData(Uri.parse("tel:" + number));
+
+        if (ActivityCompat.checkSelfPermission(appContext, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        startActivity(intent);
+
     }
 }

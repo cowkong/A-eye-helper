@@ -70,9 +70,12 @@
 
         <receiver android:name=".CALL.CallReceiver">
             <intent-filter>
+                <action android:name="android.intent.action.NEW_OUTGOING_CALL" />
                 <action android:name="android.intent.action.PHONE_STATE"/>
             </intent-filter>
         </receiver>
+
+
 
         <provider
             android:name="android.support.v4.content.FileProvider"
@@ -92,6 +95,9 @@
         <service
             android:name="com.amazonaws.mobileconnectors.s3.transferutility.TransferService"
             android:enabled="true" />
+
+        <service android:name=".CALL.AutoAnswerIntentService"/>
+
 
         <receiver android:name =".AlarmReceiver" android:exported = "true">
             <intent-filter>

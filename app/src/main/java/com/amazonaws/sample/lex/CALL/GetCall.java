@@ -11,6 +11,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 import com.amazonaws.auth.CognitoCredentialsProvider;
@@ -32,16 +33,29 @@ public class GetCall extends Activity {
     private static final String TAG = "makeCall";
     private Context appContext;
     private AmazonPollyPresigningClient client;
+    Regions MY_REGION = Regions.US_EAST_1;
+    String COGNITO_POOL_ID = "us-east-1:1ed02bb8-7cc8-4d73-b27c-5f17cdc98563";
+
     private List<Voice> voices;
     // Cognito pool ID. Pool needs to be unauthenticated pool with
     // Amazon Polly permissions.
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
+
+        appContext = getApplicationContext();
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_get_call);
         init();
         new GetCall.GetPollyVoices().execute();
         play();
+
+        /*new Thread() {
+            public void run(){
+                play();
+            }
+        }.start();*/
+        appContext.startService(new Intent(appContext,AutoAnswerIntentService.class));
     }
 
     @Override
@@ -85,11 +99,14 @@ public class GetCall extends Activity {
         // String readSMS = i.getStringExtra("smsMessage");
         //Intent i = getIntent();
         //String pn = i.getStringExtra("pNum");
+
+
+        String pn = getName() + " 에게 전화가 왔습니다.";
         SynthesizeSpeechPresignRequest synthesizeSpeechPresignRequest =
                 new SynthesizeSpeechPresignRequest()
                         // 읽어줄 메시지
                         //.withText(pn+ "에게 전화가 왔습니다.")
-                        .withText(getName() + "에게 전화가 왔습니다.")
+                        .withText(pn)
                         // voice 선택.
                         .withVoiceId("Seoyeon")
                         // format은 MP3로 선택.
@@ -129,23 +146,30 @@ public class GetCall extends Activity {
         });
     }
 
-    public String getName() {
-        String name = "";
-        Intent i = getIntent();
-        String pn1 = i.getStringExtra("pNum");
-        String pn = pn1.replace("-", "");
-
-        name = GetContact.getName(pn,appContext);
-
-        return name;
-    }
-
     private void CognitoIdentification() {
-        CognitoCredentialsProvider credentialsProvider = new CognitoCredentialsProvider(
-                appContext.getResources().getString(R.string.identity_id_test),
-                Regions.fromName(appContext.getResources().getString(R.string.cognito_region)));
-
+        CognitoCachingCredentialsProvider credentialsProvider = new CognitoCachingCredentialsProvider(
+                getApplicationContext(),
+                COGNITO_POOL_ID,
+                MY_REGION
+        );
         client = new AmazonPollyPresigningClient(credentialsProvider);
 
+    }
+    public String getName() {
+        Intent i = getIntent();
+        String pn1 = i.getStringExtra("pNum");
+        String pn = pn1.replace("-","");
+        Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(pn));
+        String[] projection = new String[] {ContactsContract.PhoneLookup.DISPLAY_NAME};
+        String name = pn1;
+
+        Cursor cursor = getBaseContext().getContentResolver().query(uri,projection,null,null,null);
+        if (cursor != null){
+            if(cursor.moveToFirst()){
+                name = cursor.getString(0);
+            }
+            cursor.close();
+        }
+        return name;
     }
 }

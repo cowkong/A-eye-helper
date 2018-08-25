@@ -42,8 +42,8 @@ public class CallReceiver extends BroadcastReceiver {
             intent = new Intent(context, GetCall.class);
             //serviceIntent.putExtra(CallingService.EXTRA_CALL_NUMBER, phone_number);
             intent.putExtra("pNum",phone_number);
+            //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
-            Toast.makeText(context, phone_number, Toast.LENGTH_LONG).show();
         }
     }
 }

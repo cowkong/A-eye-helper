@@ -62,9 +62,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
         setContentView(R.layout.activity_main);
         init();
         voicePermission();
-        cameraPermission();
-        smsPermission();
-        callPermission();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            cameraPermission();
+            smsPermission();
+            callPermission();
+        }else
+        {
+            //버전을 벗어난 경우
+        }
     }
 
     @Override
